@@ -1,0 +1,10 @@
+states: (separate by commas)
+S0, S1
+alphabet: (separate by commas)
+0, 1
+transition_function: (separate by commas. within the library, separate by spaces)
+(S0 0 S1), (S0 1 S0), (S1 0 S0), (S1 1 S1)
+start_state:
+S0
+accept_state:
+S1
