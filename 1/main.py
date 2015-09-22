@@ -118,7 +118,7 @@ class DFA(object):
     alphabet = []
     transition_function = None
     start_state = ""
-    accept_state = ""
+    accept_state = []
 
     def __init__(self, states, alphabet, transition_function, start_state, accept_state):
         # Assign data to the object
@@ -135,8 +135,6 @@ class DFA(object):
         If string is composed of allowed alphabets, return true, else, false.
         :returns: True or False
         """
-        if len(string) == 0:
-            raise(Exception("String length is 0.", string))
 
         string = list(string)
         for idx in range(len(string)):
@@ -153,6 +151,8 @@ class DFA(object):
         :type string: a string
         :returns: Final state of the language
         """
+        if not initial_state in self.states:
+            raise Exception("Undefined state", initial_state, "defined states are", self.states)
 
         if not self.is_string_a_language(string):
             raise Exception("string is not a language", string, "Allowed alphabets are", self.alphabet)
@@ -161,7 +161,11 @@ class DFA(object):
         string = list(string)
 
         for alphabet in string:
-            states_undergone.append(self.transition_function.check_transition(from_state=states_undergone[-1], alphabet=alphabet))
+            if alphabet == "": #if empty string
+                states_undergone.append(states_undergone[-1]) #stay at the same position
+            else:
+                states_undergone.append(self.transition_function.check_transition(from_state=states_undergone[-1],
+                                                                              alphabet=alphabet))
 
         return states_undergone[-1]
 
@@ -170,12 +174,13 @@ def load_dfa_data_from_txt(path="DFA_data"):
     """
     :param path: path of the datafile. default is DFA_data
     :return: returns DFA data. states, alphabet, transition function, start_state, accept state.
+    :data: 0 is states, 1 is alphabets, 2 is transitions, 3 is starting position, 5 is accepting states.
     """
     f = open(path, 'r')
     data = f.read()
     f.close()
     data = data.split("\n")
-    data = [data[1].split(", "), data[3].split(", "), data[5].split(", "), data[7], data[9]]
+    data = [data[1].split(", "), data[3].split(", "), data[5].split(", "), data[7], data[9].split(", ")]
     return data[0], data[1], data[2], data[3], data[4]
 
 
@@ -203,9 +208,12 @@ def user_interface():
         initial_state = input("initial state is: ")
         language = input("language is: ")
         try:
-            if aDFA.language_evaluation(string=language, initial_state=initial_state) == aDFA.accept_state:
+            last_state = aDFA.language_evaluation(string=language, initial_state=initial_state)
+            if last_state in aDFA.accept_state:
+                print ("last state is %s" %last_state)
                 print("네\n")
             else:
+                print ("last state is %s" %last_state)
                 print("아니요\n")
         except Exception as e:
             print("Exception occurred.", e)
