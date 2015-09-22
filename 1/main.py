@@ -204,8 +204,10 @@ def user_interface():
     print("Print data successfully loaded.\n")
 
     while(True):
-        print("Please specify the initial state, and the language to be tested.")
+        print("Please specify the initial state(optional), and the language to be tested.")
         initial_state = input("initial state is: ")
+        if initial_state == "":
+            initial_state = aDFA.start_state
         language = input("language is: ")
         try:
             last_state = aDFA.language_evaluation(string=language, initial_state=initial_state)
