@@ -164,7 +164,7 @@ class DFA(object):
             if alphabet == "": #if empty string
                 states_undergone.append(states_undergone[-1]) #stay at the same position
             else:
-                states_undergone.append(self.transition_function.check_transition(from_state=states_undergone[-1],
+                states_undergone.append(self.transition_function.check_fuction(from_state=states_undergone[-1],
                                                                               alphabet=alphabet))
 
         return states_undergone[-1]

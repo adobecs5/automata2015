@@ -1,0 +1,45 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1348\cocoasubrtf170
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh6880\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\f0\fs24 \cf0 \
+2\
+\
+S0 + 0 -> \{S0, S1, S2\} = A\
+S0 + 1 ->\{S0, S1, S2\} = A\
+\
+A + 0 -> \{S0, S1, S2\}\
+A + 1 -> \{S0, S1, S2\}\
+\
+done.\
+\
+\
+\
+3.\
+A + 0 -> (A, B, C, D, E, G, H, I, J, K\} = alpha(0)\
+A + 1 -> (A, B, C, E, F, G, H, I\}= beta(1)\
+alpha + 0 -> (A, B, C, D, E, G, H, I, J, K) (00)\
+alpha + 1 -> (A, B, C, D, E, F, G, H, I, J, K, L, M) = gamma(01)\
+beta + 0 -> (A, B, C, D, E, F, G, H, I, J, K) = delta(10)\
+beta + 1 -> A, B, C, E, F, G, H, I (11)\
+gamma + 0 -> (A, B, C, D, E, F, G, H, I, J, K, L, M) (010)\
+gamma + 1 -> (A, B, C, D, E, F, G, H, I, J, K, L, M, N) (011)\
+delta + 0 -> (A, B, C, D, E, F, G, H, I, J, K) (100)\
+delta + 1 -> (A, B, C, D, E, F, G, H, I, J, K, L, M) (101)\
+\
+\
+\
+3-RE.\
+A+0 -> (B, C, D, G, H, I, J, K)\
+A+1 -> (B, E, F, G, H, I)\
+A+00-> (B, C, E, D, G, H, I, J, K, empty)\
+A+01 -> (C, E, D, F, G, B, E, H, I, L, M, empty)\
+A+10 -> (B, E, C, D, G, H, I, J, K)\
+A+11 -> (B, C, E, F, G, H, I, empty)\
+A+001 -> (B, C, D, E, F, G, H, I, J, K, L, M, N, empty)\
+A+000 ->(B, C, E, D, G, H, I, J, K, empty)\
+A+010 -> (C, E, D, F, G, B, E, H, I, L, M, empty)\
+A+011 -> (B, C, D, E, F, G, H, I, \
+}
