@@ -1,0 +1,17 @@
+# made by adobecs5@kaist.ac.kr
+# only tested on OSX. Works fine on OSX 10.10.5
+# coded with python3.4.3.
+# key_stroke_reader reads keystroke without line break and prints 1. read input, and 2. read input code. 
+
+import sys
+import os
+
+def key_stroke_reader():
+    os.system("stty raw -echo")
+    c = sys.stdin.read(1)
+    os.system("stty -raw echo")
+    print("Pressed key is %s"%c)
+    print("Key code is %s\n"%ord(c))
+
+while 1:
+    key_stroke_reader()
