@@ -1,0 +1,5 @@
+Hi, welcome to the Hangul Simulator.
+Please set your keyboard input type to English.
+If you type “ak”, you will see “마” being typed on the terminal.
+When you want to quit, raise keyboard interrupt (which is command + c in OSX) or hit esc.
+Thanks!

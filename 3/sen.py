@@ -2,18 +2,37 @@ __author__ = 'CJeon'
 
 # using unicode.
 import sys
+import gc
+global delete_flag
+"""
+The below defined delete_flag works like below:
+    0: if new char is just added, it is always set to be 0
+    1: if a sound is just deleted, it is set to be zero.You can still modify the letter you were typing.
+    2: if a whole char was deleted, it is set to be zero. Now delete function will remove whole character.
+"""
+delete_flag = 0
+
 
 def inputManager():
     import os
     os.system("stty raw -echo")
     c = sys.stdin.read(1)
     os.system("stty -raw echo")
-    # print(ord(c))
-    return EngKor_table[c]
+    if ord(c) == 3 or ord(c) == 27:
+        print (" keyboard interrupt. quitting. Bye~~")
+        exit()
+    print(ord(c))
+    try:
+        return EngKor_table[c]
+    except:
+        return c
 
 def inputManagerPycharm():
     c = input(">>")
-    return EngKor_table[c]
+    try:
+        return EngKor_table[c]
+    except:
+        return c
 
 EngKor_table = {"q" : "ㅂ", "w" : "ㅈ", "e" : "ㄷ", "r" : "ㄱ",
                 "t" : "ㅅ", "y" : "ㅛ", "u" : "ㅕ", "i" : "ㅑ",
@@ -28,8 +47,8 @@ EngKor_table = {"q" : "ㅂ", "w" : "ㅈ", "e" : "ㄷ", "r" : "ㄱ",
                 "G" : "ㅎ", "H" : "ㅗ", "J" : "ㅓ", "K" : "ㅏ",
                 "L" : "ㅣ", "Z" : "ㅋ", "X" : "ㅌ", "C" : "ㅊ",
                 "V" : "ㅍ", "B" : "ㅠ", "N" : "ㅜ", "M" : "ㅡ",
-                "\x7f" : "delete", "\r" : "enter", ' ' : "space",
-                "?" : "?", "!": "!", "~": "~", ".": ".", ",": ","}
+                "\x7f" : "delete", "\r" : "\n", "enter": "\n",
+                "del" : "delete"}
 
 class hangul(object):
     first_sound_table = {"ㄱ": 0, "ㄲ": 1, "ㄴ": 2, "ㄷ": 3, "ㄸ": 4,
@@ -62,8 +81,11 @@ class hangul(object):
         if self.first_sound == -1 and self.mid_sound != -1:
             return (list(self.mid_sound_table.keys())[list(self.mid_sound_table.values()).index(self.mid_sound)])
 
-        if self.mid_sound == -1:
+        if self.mid_sound == -1 and self.first_sound!= -1:
             return (list(self.first_sound_table.keys())[list(self.first_sound_table.values()).index(self.first_sound)])
+
+        if self.mid_sound == -1 and self.first_sound == -1:
+            return ""
 
         return (chr(self.first_sound*588 + self.mid_sound*28 + self.final_sound + 44032))
 
@@ -79,26 +101,57 @@ class hangul(object):
         self.final_sound = self.final_sound_table[letter]
         self.final_sound_k = letter
 
+def delete(state):
+    global delete_flag
+    if delete_flag == 2:
+        # if delete_flag is 1, just delete the last char.
+        # set delete flag to be zero so that no editing is possible
+        delete_flag = 2
+        return state[:-1]
+
+    # increment delete flag
+    delete_flag +=1
+    if state != [] and type(state[-1]) is hangul:
+        char = state[-1]
+        if char.final_sound != 0: # if it has a final sound
+            char.final_sound = 0 # delete it
+        elif char.mid_sound != -1: # if it has a mid sound
+            char.mid_sound = -1 # delete it
+            if char.first_sound == -1: # if it only had a mid sound
+                return state[:-1] # delete whole character
+        elif char.first_sound != -1: # if it has only first sound
+            state = state[:-1] # remove whole character
+            delete_flag = 2
+            return state # return state without last char
+
+        state[-1] = char # return fixed char
+        return state
+
+    return state[:-1] # if it were not Hangul remove last char
+
+
 
 def lastFirstHangulAssembler(state, new_letter):
-    # treat special cases
-    if new_letter in ["delete", "enter", "space", "?", "!", "~", ".", ","]:
-        if new_letter == "space":
-            state.append(" ")
-            return state
+    global delete_flag
 
-        elif new_letter == "delete":
-            return state[:-1]
+    # treat special cases
+    if new_letter not in hangul().first_sound_table and new_letter not in hangul().mid_sound_table:
+        if new_letter == "delete":
+            return delete(state)
 
         else:
+            # it was not delete, so set delete flag to be zero
+            delete_flag = 0
             state.append(new_letter)
             return state
 
     # initialize
     split_flag = 1
-    if state != [] and state[-1] != " ":
+    if state != [] and type(state[-1]) is hangul and delete_flag != 2:
         char = state[-1]
+
     else:
+        delete_flag = 0
         new_char = hangul()
         try:
             new_char.add_first_sound(new_letter)
@@ -109,60 +162,25 @@ def lastFirstHangulAssembler(state, new_letter):
 
     if new_letter in char.first_sound_table:
         # handle 자음
+
         if char.mid_sound == -1: # if char has no mid sound
             new_char = hangul()
             new_char.add_first_sound(new_letter)
             state.append(new_char)
             return state
 
-        elif char.final_sound == 0:
-            char.add_final_sound(new_letter)
+        elif char.final_sound == 0: # if char has no final sound
+            try: # if is final-soundable
+                char.add_final_sound(new_letter)
+
+            except:
+                new_char = hangul()
+                new_char.add_first_sound(new_letter)
+                state.append(new_char)
+                return state
 
         elif char.final_sound_k in ["ㄱ", "ㄴ", "ㄹ", "ㅂ"]:
-            if char.final_sound_k == "ㄱ":
-                if new_letter == "ㅅ":
-                    char.add_final_sound("ㄳ")
-                else:
-                    split_flag = 0
-
-            elif char.final_sound_k == "ㄴ":
-                if new_letter == "ㅈ":
-                    char.add_final_sound("ㄵ")
-                elif new_letter == "ㅎ":
-                    char.add_final_sound("ㄶ")
-                else:
-                    split_flag = 0
-
-            elif char.final_sound_k == "ㄹ":
-                if new_letter == "ㄱ":
-                    char.add_final_sound("ㄺ")
-
-                elif new_letter == "ㅁ":
-                    char.add_final_sound("ㄻ")
-
-                elif new_letter == "ㅂ":
-                    char.add_final_sound("ㄼ")
-
-                elif new_letter == "ㅅ":
-                    char.add_final_sound("ㄽ")
-
-                elif new_letter == "ㅌ":
-                    char.add_final_sound("ㄾ")
-
-                elif new_letter == "ㅍ":
-                    char.add_final_sound("ㄿ")
-
-                elif new_letter == "ㅎ":
-                    char.add_final_sound("ㅀ")
-                else:
-                    split_flag = 0
-
-
-            elif char.final_sound_k == "ㅂ":
-                if new_letter == "ㅅ":
-                    char.add_final_sound("ㅄ")
-                else:
-                    split_flag = 0
+            char, split_flag = handle_double_final_sound(char, new_letter, split_flag)
 
         else:
             new_char = hangul()
@@ -245,52 +263,281 @@ def lastFirstHangulAssembler(state, new_letter):
         else: # if it has a vowel
             vowel = char.mid_sound_k
             if vowel in ["ㅗ", "ㅜ", "ㅡ"]:
-                if vowel == "ㅗ":
-                    if new_letter == "ㅏ":
-                        char.add_mid_sound("ㅘ")
-                    elif new_letter == "ㅐ":
-                        char.add_mid_sound("ㅙ")
-                    elif new_letter == "ㅣ":
-                        char.add_mid_sound("ㅚ")
-                    else:
-                        split_flag = 0
-
-                elif vowel == "ㅜ":
-                    if new_letter == "ㅓ":
-                        char.add_mid_sound("ㅝ")
-                    elif new_letter == "ㅔ":
-                        char.add_mid_sound("ㅞ")
-                    elif new_letter == "ㅣ":
-                        char.add_mid_sound("ㅟ")
-                    else:
-                        split_flag = 0
-
-                elif vowel == "ㅡ":
-                    if new_letter == "ㅣ":
-                        char.add_mid_sound("ㅢ")
-                    else:
-                        split_flag = 0
+                char, split_flag = handle_double_mid_sound(char, new_letter, split_flag)
 
                 if split_flag == 1:
                     state[-1] = char
                     return state
 
+
         state.append(new_char)
         return state
 
+def create_new_hangul(state, new_letter):
+    new_char = hangul()
+    try:
+        new_char.add_first_sound(new_letter)
+    except:
+        new_char.add_mid_sound(new_letter)
+    state.append(new_char)
+    return state
+
+def handle_double_final_sound(char, new_letter, split_flag):
+    if char.final_sound_k == "ㄱ":
+        if new_letter == "ㅅ":
+            char.add_final_sound("ㄳ")
+        else:
+            split_flag = 0
+
+    elif char.final_sound_k == "ㄴ":
+        if new_letter == "ㅈ":
+            char.add_final_sound("ㄵ")
+        elif new_letter == "ㅎ":
+            char.add_final_sound("ㄶ")
+        else:
+            split_flag = 0
+
+    elif char.final_sound_k == "ㄹ":
+        if new_letter == "ㄱ":
+            char.add_final_sound("ㄺ")
+
+        elif new_letter == "ㅁ":
+            char.add_final_sound("ㄻ")
+
+        elif new_letter == "ㅂ":
+            char.add_final_sound("ㄼ")
+
+        elif new_letter == "ㅅ":
+            char.add_final_sound("ㄽ")
+
+        elif new_letter == "ㅌ":
+            char.add_final_sound("ㄾ")
+
+        elif new_letter == "ㅍ":
+            char.add_final_sound("ㄿ")
+
+        elif new_letter == "ㅎ":
+            char.add_final_sound("ㅀ")
+        else:
+            split_flag = 0
+
+
+    elif char.final_sound_k == "ㅂ":
+        if new_letter == "ㅅ":
+            char.add_final_sound("ㅄ")
+        else:
+            split_flag = 0
+
+    return char, split_flag
+
+def handle_double_mid_sound(char, new_letter, split_flag):
+    vowel = char.mid_sound_k
+    if vowel == "ㅗ":
+        if new_letter == "ㅏ":
+            char.add_mid_sound("ㅘ")
+        elif new_letter == "ㅐ":
+            char.add_mid_sound("ㅙ")
+        elif new_letter == "ㅣ":
+            char.add_mid_sound("ㅚ")
+        else:
+            split_flag = 0
+
+    elif vowel == "ㅜ":
+        if new_letter == "ㅓ":
+            char.add_mid_sound("ㅝ")
+        elif new_letter == "ㅔ":
+            char.add_mid_sound("ㅞ")
+        elif new_letter == "ㅣ":
+            char.add_mid_sound("ㅟ")
+        else:
+            split_flag = 0
+
+    elif vowel == "ㅡ":
+        if new_letter == "ㅣ":
+            char.add_mid_sound("ㅢ")
+        else:
+            split_flag = 0
+
+    return char, split_flag
+
+
+def firstFirstHangulAssembler(state, new_letter):
+    # 초성 우선 어셈블러
+    global delete_flag
+
+    # treat special cases
+    if new_letter not in hangul().first_sound_table and new_letter not in hangul().mid_sound_table:
+        if new_letter == "delete":
+            return delete(state)
+
+        elif new_letter == " ":
+            try:
+                char = state[-1]
+                older_char = state[-2]
+                if older_char.final_sound == 0 and char.mid_sound == -1:
+                    # if letter before was just first sound and
+                    # letter before that does not have a final sound,
+                    # make the first sound last of letter before that
+                    older_char.add_final_sound(char.first_sound_k)
+                    state[-2] = older_char
+                    # replace last char with space
+                    state[-1] = " "
+                    return state
+
+                if older_char.final_sound_k in ["ㄱ", "ㄴ", "ㄹ", "ㅂ"]:
+                    split_flag = 1
+                    older_char, split_flag = handle_double_final_sound(older_char, char.first_sound_k, split_flag)
+                    if split_flag == 1:
+                        state[-2] = older_char
+                        state[-1] = " "
+                        return state
+                    else:
+                        raise Exception("break")
+
+                raise Exception("break")
+            except:
+                delete_flag = 0
+                state.append(new_letter)
+                return state
+
+        else:
+            # it was not delete, so set delete flag to be zero
+            delete_flag = 0
+            state.append(new_letter)
+            return state
+
+    if state != [] and type(state[-1]) is hangul :
+        char = state[-1]
+    else:
+        return create_new_hangul(state, new_letter)
+
+    if len(state) > 1 and type(state[-2]) is hangul:
+        older_char = state[-2]
+    else:
+        older_char = hangul()
+        older_char.add_final_sound("ㄱ")
+
+    if new_letter in hangul().first_sound_table:
+        # handle 자음
+        if char.mid_sound != -1:
+            #if letter before has a middle sound
+            return create_new_hangul(state, new_letter)
+
+        if char.first_sound != -1:
+        # if letter before has a first sound
+            if older_char.final_sound == 0:
+            # if letter before before does not have a final sound
+            # make the first sound of letter before last sound of letter before before
+                if older_char.mid_sound != -1:
+                    # if older char has a vowel
+                    older_char.add_final_sound(char.first_sound_k)
+                    char.add_first_sound(new_letter)
+                    state[-1] = char
+                    state[-2] = older_char
+                    return state
+
+                else:
+                    return create_new_hangul(state, new_letter)
+
+            elif older_char.final_sound_k in ["ㄱ", "ㄴ", "ㄹ", "ㅂ"]:
+                split_flag = 1
+                older_char, split_flag = handle_double_final_sound(older_char, char.first_sound_k, split_flag)
+                if split_flag == 1:
+                    state[-2] = older_char
+                    return create_new_hangul(state[:-1], new_letter)
+                else:
+                    return create_new_hangul(state, new_letter)
+
+            else:
+                #add new hangul with only first sound.
+                return create_new_hangul(state, new_letter)
+
+    elif new_letter in hangul().mid_sound_table:
+        # handle 모음
+        if char.first_sound != -1:
+            # if letter before have a first sound
+            if char.mid_sound == -1:
+                #if letter before does not have a vowel
+                char.add_mid_sound(new_letter)
+                state[-1] = char
+            elif char.mid_sound != -1:
+                #if letter before have a vowel
+                vowel = char.mid_sound_k
+                if vowel in ["ㅗ", "ㅜ", "ㅡ"]:
+                    split_flag = 0
+                    char, split_flag = handle_double_mid_sound(char, new_letter, split_flag)
+                    state[-1] = char
+
+                else:
+                    return create_new_hangul(state, new_letter)
+
+
+        else:
+            return create_new_hangul(state, new_letter)
+
+        return state
+
+    raise Exception("Something Wrong")
+
 
 def main():
+    gc.enable()
+    for i in range(100):
+        print ("#", end="")
+    logo = open("logo.txt", "r")
+    logotxt = logo.readlines()
+    logo.close()
+    for i in logotxt:
+        if i != "\n":
+            print(i, end="")
+    print("")
+    for i in range(100):
+        print ("#", end="")
+    print("")
+
+    intro = open("intro.txt", "r")
+    introtxt = intro.readlines()
+    intro.close()
+    for i in introtxt:
+        if i != "\n":
+            print(i, end="")
+    print("")
+
+    print("Please choose input method")
+    print("1. Raw mode. Program will catch your input without you pressing enter. (recommended)")
+    print("2. Normal mode. You should press enter every input. If 1 does not work, use this instead.")
+    input_mode = input(">>")
+    if input_mode == "1":
+        print ("You chose raw mode.")
+    elif input_mode == "2":
+        print ("You chose normal mode. type \"enter\" and \"del\" to linebreak and delete")
+    else:
+        raise Exception("Invalid choice")
+
+    print("\nPlease choose testing function")
+    print("1. 받침우선")
+    print("2. 초성우선")
+    test_mode = input(">>")
+    if test_mode == "1":
+        print ("You chose 받침우선.")
+    elif test_mode == "2":
+        print ("You chose 초성우선")
+    else:
+        raise Exception("Invalid choice")
+
     current_string = []
     while 1:
-        new_letter = inputManager()
-        #new_letter = inputManagerPycharm()
+        if input_mode == "1":
+            new_letter = inputManager()
+        else:
+            new_letter = inputManagerPycharm()
 
-        current_string = lastFirstHangulAssembler(current_string, new_letter)
-        a = 1
+        if test_mode == "1":
+            current_string = lastFirstHangulAssembler(current_string, new_letter)
+        else:
+            current_string = firstFirstHangulAssembler(current_string, new_letter)
         for i in current_string:
             print(i, end="")
         print()
 
 main()
-
-
