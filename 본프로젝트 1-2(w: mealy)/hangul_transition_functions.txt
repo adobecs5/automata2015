@@ -1,0 +1,13 @@
+states: (separate by commas)
+S, V, O, U, A, I, K, N, R, L
+start_state: (only one)
+S
+input_alphabet: (separate by commas)
+ㄱ, ㄴ, ㄷ, ㄹ, ㅁ, ㅂ, ㅅ, ㅇ, ㅈ, ㅊ, ㅋ, ㅌ, ㅍ, ㅎ, ㄲ, ㄸ, ㅃ, ㅆ, ㅉ, ㅏ, ㅑ, ㅓ, ㅕ, ㅗ, ㅛ, ㅜ, ㅠ, ㅡ, ㅣ, ㅐ, ㅒ, ㅔ, ㅖ
+transition_function: (separate by commas. within the function, separate by spaces)
+(S ㄱ V), (S ㄴ V), (S ㄷ V), (S ㄹ V), (S ㅁ V), (S ㅂ V), (S ㅅ V), (S ㅇ V), (S ㅈ V), (S ㅊ V), (S ㅋ V), (S ㅌ V), (S ㅍ V), (S ㅎ V), (S ㄲ V), (S ㄸ V), (S ㅃ V), (S ㅆ V), (S ㅉ V)
+(V ㅗ O), (V ㅜ U), (V ㅏ A), (V ㅑ A), (V ㅓ A), (V ㅕ A), (V ㅡ A), (V ㅛ I), (V ㅠ I), (V ㅣ I)
+(O ㄱ K), (U ㄱ K), (A ㄱ K), (I ㄱ K), (O ㅂ K), (U ㅂ K), (A ㅂ K), (I ㅂ K), (O ㄴ N), (U ㄴ N), (A ㄴ N), (I ㄴ N), (O ㄹ R), (U ㄹ R), (A ㄹ R), (I ㄹ R)
+(O ㄷ L), (O ㅁ L), (O ㅅ L), (O ㅇ L), (O ㅈ L), (O ㅊ L), (O ㅋ L), (O ㅌ L), (O ㅍ L), (O ㅎ L), (O ㄲ L), (O ㅆ L), (U ㄷ L), (U ㅁ L), (U ㅅ L), (U ㅇ L), (U ㅈ L), (U ㅊ L), (U ㅋ L), (U ㅌ L), (U ㅍ L), (U ㅎ L), (U ㄲ L), (U ㅆ L), (A ㄷ L), (A ㅁ L), (A ㅅ L), (A ㅇ L), (A ㅈ L), (A ㅊ L), (A ㅋ L), (A ㅌ L), (A ㅍ L), (A ㅎ L), (A ㄲ L), (A ㅆ L), (I ㄷ L), (I ㅁ L), (I ㅅ L), (I ㅇ L), (I ㅈ L), (I ㅊ L), (I ㅋ L), (I ㅌ L), (I ㅍ L), (I ㅎ L), (I ㄲ L), (I ㅆ L)
+(K ㅗ O), (N ㅗ O), (R ㅗ O), (L ㅗ O), (K ㅜ U), (N ㅜ U), (R ㅜ U), (L ㅜ U), (K ㅏ A), (K ㅑ A), (K ㅓ A), (K ㅕ A), (K ㅡ A), (N ㅏ A), (N ㅑ A), (N ㅓ A), (N ㅕ A), (N ㅡ A), (R ㅏ A), (R ㅑ A), (R ㅓ A), (R ㅕ A), (R ㅡ A), (L ㅏ A), (L ㅑ A), (L ㅓ A), (L ㅕ A), (L ㅡ A)
+(K ㅅ L), (K ㅈ L), (K ㅎ L), (R ㄱ L), (R ㅁ L), (R ㅂ L), (R ㅅ L), (R ㅌ L), (R ㅍ L), (R ㅎ L),

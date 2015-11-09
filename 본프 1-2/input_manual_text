@@ -1,0 +1,5 @@
+State를 입력해주세요. 스페이스로 구분합니다.
+Symbol을 입력해주세요. 스페이스로 구분합니다.
+번째 Transition function을 입력해주세요. 스페이스로 구분합니다. 다 입력하셨으면, end를 입력해주세요.
+starting state를 입력해주세요.
+accepting state를 입력해주세요.

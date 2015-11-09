@@ -1,0 +1,11 @@
+q0 q1 q2
+a b c
+q0 a q0
+q0 a q1
+q0 a q2
+q1 b q1
+q2 c q2
+q2 eps q1
+end
+q0
+q1
